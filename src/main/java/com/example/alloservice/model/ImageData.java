@@ -1,40 +1,25 @@
 package com.example.alloservice.model;
+
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-
-
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 @Entity
-@Table(name = "imageData")
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "images")
 public class ImageData {
-	
-	    @Id
-	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	    private Long id;
 
-	    private String name;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-	    private String type;
-	   
-	    @Lob
-	    @Column(name = "imagedata", length = 1000)
-	    private String imagePath ;
-	    
-		   private byte[] url ;
+	private String name;
+	private String type;
 
-	    @ManyToOne
-	    @JoinColumn(name = "offre_id")
-	    private Offre offre;
-	 
-	    @ManyToOne
-	    @JoinColumn(name = "user_id")
-	    private User user;
-	
+	@Lob
+	@Column(columnDefinition = "LONGBLOB")
+	private byte[] imageData;
+
+	@ManyToOne
+	@JoinColumn(name = "offre_id")
+	private Offre offre;
 }

@@ -41,10 +41,13 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole() != null ? request.getRole() : "ROLE_USER");
+        user.setFullname(request.getFullname());   // manquait
+        user.setPhone(request.getPhone());         // manquait
+        user.setAddress(request.getAddress());     // manquait
 
         userRepository.save(user);
         String token = jwtUtils.generateToken(user);
-        return new AuthResponse("User Registred successfully" , token);
+        return new AuthResponse("User Registred successfully", token);
     }
 
     public AuthResponse login(LoginRequest request){

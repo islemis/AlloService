@@ -1,55 +1,82 @@
 package com.example.alloservice.service;
 
-
+import com.example.alloservice.dto.UserDto;
 import com.example.alloservice.exception.ResourceNotFoundException;
 import com.example.alloservice.model.User;
-import com.example.alloservice.repository.UserProfileRepository;
 import com.example.alloservice.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
-    private final UserProfileRepository userProfileRepository;
 
-    public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.userProfileRepository = userProfileRepository;
     }
 
-    // Get All Users
-    public List<User> getAll(){
-        return userRepository.findAll();
+    // --- Mapper ---
+    private UserDto toDto(User user) {
+        return new UserDto(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole(),
+                user.getFullname(),
+                user.getPhone(),
+                user.getAddress()
+        );
     }
 
-    // Get User By ID
-    public User getById(Long id){
-        if (!userRepository.existsById(id)){
-                throw new ResourceNotFoundException("User with given ID : " + id + " not found");
-        }
-        return userRepository.findById(id).get();
+    // Get All Users (ADMIN)
+    public List<UserDto> getAll() {
+        return userRepository.findAll()
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
-    // Delete User
-    public ResponseEntity<String> deleteUser(Long id){
-        if(!userRepository.existsById(id)){
-            throw new ResourceNotFoundException("User with given ID : " + id + " not found");
+    // Get by ID (ADMIN)
+    public UserDto getById(Long id) {
+        return userRepository.findById(id)
+                .map(this::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException("User with ID " + id + " not found"));
+    }
+
+
+
+    // Delete (ADMIN)
+    public ResponseEntity<String> deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new ResourceNotFoundException("User with ID " + id + " not found");
         }
         userRepository.deleteById(id);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body("User deleted successfully ");
+        return ResponseEntity.ok("User deleted successfully");
     }
 
-    // Update User
-    public User updateUser(User user) {
-        if (!userRepository.existsById(user.getId())){
-            throw  new ResourceNotFoundException("User not found");
+    // Update — only the owner can update their own profile
+    public UserDto updateUser(UserDto dto, String currentUsername) {
+        User existing = userRepository.findById(dto.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // Ownership check — prevent a user from editing someone else's profile
+        if (!existing.getEmail().equals(currentUsername)) {
+            throw new AccessDeniedException("You are not allowed to update this profile");
         }
-        return userRepository.save(user);
+
+        if (dto.getUsername() != null) existing.setUsername(dto.getUsername());
+        if (dto.getEmail()    != null) existing.setEmail(dto.getEmail());
+        if (dto.getRole()     != null) existing.setRole(dto.getRole());
+        if (dto.getFullname() != null) existing.setFullname(dto.getFullname());
+        if (dto.getPhone()    != null) existing.setPhone(dto.getPhone());
+        if (dto.getAddress()  != null) existing.setAddress(dto.getAddress());
+
+        return toDto(userRepository.save(existing));
     }
 }

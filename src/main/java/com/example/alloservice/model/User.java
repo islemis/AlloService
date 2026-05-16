@@ -1,38 +1,35 @@
 package com.example.alloservice.model;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import java.util.HashSet;
+import java.util.Set;
 
-
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-
+@Setter @Getter @AllArgsConstructor @NoArgsConstructor
 @Entity
-@Table(name="users")
+@Table(name = "users")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Name cannot be empty")
+    @NotBlank
     private String username;
 
-    @NotBlank(message = "Email cannot be empty")
-    @Email(message = "Valid Email required")
+    @NotBlank @Email
     private String email;
 
-    @Size(min = 8  , message = "Password must be between 8 and 20")
+    @Size(min = 8)
     private String password;
 
     private String role;
 
-    @JsonIgnoreProperties({"user"})
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="profile_id")
-    private UserProfile userProfile;
+    private String fullname;
+    private String phone;
+    private String address;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Offre> offres = new HashSet<>();
 }

@@ -1,28 +1,14 @@
 package com.example.alloservice.model;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import java.util.HashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 @Entity
-@Table(name = "Categories")
+@Table(name = "categories")
 public class Category {
 
     @Id
@@ -32,7 +18,6 @@ public class Category {
     @NotNull
     private String name;
 
-    @JsonIgnore
-    @ManyToMany(fetch = FetchType.EAGER, mappedBy = "categories")
-    private Set<Offre> offres;
+    @ManyToMany(mappedBy = "categories")
+    private Set<Offre> offres = new HashSet<>();
 }
